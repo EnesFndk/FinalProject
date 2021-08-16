@@ -32,6 +32,27 @@ namespace ConsoleUI
             //ProductTest();
 
             //CategoryManager bir CategoryDal istediği için EfCategoryDal'ı newliyoruz.
+            //CategoryTest();
+
+            //Dto için yaptığımız console.
+            ProductManager productManager3 = new ProductManager(new EfProductDal());
+
+            var result = productManager3.GetProductDetails();
+            if (result.Success == true)
+            {
+                foreach (var product in result.Data)
+                {
+                    Console.WriteLine(product.ProductName + "/" + product.CategoryName);
+                }
+            }
+            else
+            {
+                Console.WriteLine(result.Message);
+            }
+        }
+
+        private static void CategoryTest()
+        {
             CategoryManager categoryManager = new CategoryManager(new EfCategoryDal());
             foreach (var category in categoryManager.GetAll())
             {
@@ -39,14 +60,15 @@ namespace ConsoleUI
             }
         }
 
-        private static void ProductTest()
-        {
-            ProductManager productManager2 = new ProductManager(new EfProductDal());
 
-            foreach (var product in productManager2.GetByUnitPrice(40, 100))
-            {
-                Console.WriteLine(product.ProductName);
-            }
-        }
+        //private static void ProductTest()
+        //{
+        //    ProductManager productManager2 = new ProductManager(new EfProductDal());
+
+        //    foreach (var product in productManager2.GetByUnitPrice(40, 100))
+        //    {
+        //        Console.WriteLine(product.ProductName);
+        //    }
+        //}
     }
 }
