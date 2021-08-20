@@ -33,10 +33,12 @@ namespace WebAPIx
             //Autofac, Ninject, CastleWindsor, StructureMap, LightInject, DryInject --> IoC Container alt yapýsý kuruyor ve bunlardan birini kullanýcaz. "services.AddSingleton<IProductDal, EfProductDal>();" bunun gibileri yazmamak için. gene clean cod yapýyoruz.
             //yukarýdaki iþlemler AOP tekniðiyle yapýcaz.
             //Eðer IProductsService isterse ona newlenmiþ ProductManager ver demek. IoC yöntemi ile.
-
-            services.AddSingleton<IProductsService,ProductManager>();
+            //**************Hangi interface'in karþýlýðý nedir? API kýsmýnda deðil (Business) Backend de  Autofac ile yapýcaz. Performans açýsýndan çok önemli.*********
+            //services.AddSingleton<IProductsService,ProductManager>();
             //aþaðýdakinde de IProductDal isterse ona newlenmiþ EfProductDal veriyor. IoC yöntemi ile.
-            services.AddSingleton<IProductDal, EfProductDal>();
+            //services.AddSingleton<IProductDal, EfProductDal>();
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
