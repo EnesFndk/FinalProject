@@ -8,7 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Business.DependencyResolvers.Autofac
-{
+{   
+    //********neden çift klasörlüyoruz. ValidationRules altına FluentValidation yada DependencyResolvers altında Autofac olarak neden klasörledik. Çünkü Gelecekte farklı bir yapıyla çalışınca başka klasör kurup direk değişiklikleri yapabiliriz.
     //Module yazıp çözdürcez Autofac'e göre.
     //biz niye böyle bi class oluşturduk. çünkü webapi'deki startup'da hani "services.AddSingleton<IProductsService,ProductManager>();" yazdık ya onların alt yapısı bunlar 
     //Onları yazmak için böyle class oluşturmak lazım ve 1 kere yazıcaz. Backend.

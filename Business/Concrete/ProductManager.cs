@@ -1,9 +1,12 @@
 ﻿using Business.Absract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,11 +28,27 @@ namespace Business.Concrete
             //business kodlar buraya yazılır.
             //if ile olan kötü kod. 
             //Messages.ProductNameInvalid = business constants'a eklediğimiz yerleri buraya ekliyoruz temiz kod oluyor. Orda tek yerden düzeltebiliriz.
-            if (product.ProductName.Length<2)
-            {
-                return new ErrorResult(Messages.ProductNameInvalid);
-            }
+            //validation = business kodu ayrı , doğrulama kodu ayrı yazılmalı.
+            //doğrulama kodu = şifre buna uymalı, ismin min 2 tane olmalı vs vs uyumuyla alakalı olan kodlara doğrulama kodu deniyor.
+            //iş kuralı (business) kodu = ehliyet alıcaksınız , bir kişiye ehliyet verilip verilmeyeceği , yani  kişi sürücü sınavından belirlenen puanı almış mı diye kontrol ediyoruz ona göre kabul ediyoruz.
+            //****ÖNEMLİ*****ŞİMDİ BU AŞAĞIDAKİ IF'LERI kullanmak yerine ve FluentValidation ile bu kodlardan kurtulup orda yedekleme yapabiliriz ve temiz kod olur. *********
 
+            //AŞAĞIDAKİ IF'LER NOTLAR BOŞA ÇIKMASIN DİYE KÖTÜ KOD'U DA GÖRMEK İÇİN YORUM SATIRI OLARAK EKLENMİŞTİR.
+            //if (product.UnitPrice<=0 )
+            //{
+            //    return new ErrorResult(Messages.UnitPriceInvalid);
+            //}
+            //if (product.ProductName.Length<2)
+            //{
+            //    return new ErrorResult(Messages.ProductNameInvalid);
+            //}
+            //**********_productDal.Add(product); üstte olması lazım kod sıralaması önemli çünkü yoksa çalışmaz. if yerine normal ErrorResult da yapsaydık olmazdı. Kod sıralaması önemli 
+
+
+
+            ValidationTool.Validate(new ProductValidator(),product);
+
+            //Bütün projelerimde kullanmak için bir yapı yapmak istiyorum.
             _productDal.Add(product);
 
             return new SuccessResult(Messages.ProductAdded);
