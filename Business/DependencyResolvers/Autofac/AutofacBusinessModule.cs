@@ -1,6 +1,9 @@
 ﻿using Autofac;
+using Autofac.Extras.DynamicProxy;
 using Business.Absract;
 using Business.Concrete;
+using Castle.DynamicProxy;
+using Core.Utilities.Interceptors;
 using DataAccess.Abstract;
 using DataAccess.Concrete.EntityFramework;
 using System;
@@ -16,11 +19,23 @@ namespace Business.DependencyResolvers.Autofac
     //override deyip space'e tıklayıp load'ı seçiyoruz.
     public class AutofacBusinessModule:Module
     {
+        //KISACASI AUTOFAC NE YAPIYOR ? = BÜTÜN SINIFLARIMIZ İÇİN ÖNCE AspectInterceptorSelector ÇALIŞTIRIYOR. GİT BAK DİYOR ASPECT'I VAR MI ? ONDAN SONRA İŞLEMLERİ YAPIYOR.
         protected override void Load(ContainerBuilder builder)
         {
             //IProductsService istenilirse ProductManager new'le. Startup'da yazdığımız kodun aynısı.
             builder.RegisterType<ProductManager>().As<IProductsService>().SingleInstance();
             builder.RegisterType<EfProductDal>().As<IProductDal>().SingleInstance();
+
+            //Çalışan uygulamalar içerisinde 
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+            //implemente edilmiş interface'leri bul
+            builder.RegisterAssemblyTypes(assembly).AsImplementedInterfaces()
+                .EnableInterfaceInterceptors(new ProxyGenerationOptions()
+                {
+                    //onlar için AspectInterceptorSelector'u çağır diyoruz.
+                    Selector = new AspectInterceptorSelector()
+                }).SingleInstance();
         }
     }
 }

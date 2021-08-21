@@ -1,6 +1,7 @@
 ﻿using Business.Absract;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -21,9 +22,22 @@ namespace Business.Concrete
         {
             _productDal = productDal;
         }
+        //AOP nedir? projede hata olduğunda onları düzeltmek için kullanılır.
+        //Attribute koyduğumuz zaman mesela Add'i çağırıcağımız zaman üstüne bakıp Attribute var mı bakıyor, Varsa onu çalıştırıyor. Örnek Attribute [Validate]. Add çalışmadan önce Attribute çalışıyor.
+        //Attribute lar classlara methodlara vs vs yapılara anlam yüklemek için kullanılıyor.
+        //
+        //[ValidateAspect(typeof (ProductValidator))] = ProductValidator daki kurallara göre Add metodunu doğrula demek. Bunun kodu da Core.Aspects.Autofac.Validation içerisinde yazıyor.
 
+        [ValidationAspect(typeof (ProductValidator))]
         public IResult Add(Product product)
         {
+            //Bu şekilde yazdığımızda business katmanında sadece business code'lar yer alıcak aşağıdaki kodu yazmamıza gerek kalmıcak çünkü arkada onu çalıştıran Core katmanında var zaten.
+            //ValidationTool.Validate(new ProductValidator(), product);
+            
+            _productDal.Add(product);
+
+            return new SuccessResult(Messages.ProductAdded);
+
             //IResult eklediğimizde Add kızdı çünkü içinde birşey döndürmemiz gerekiyordu. Bu yüzden Result'u döndürdük. Return'ü _productDal'a eklemedik çünkü Add var .
             //business kodlar buraya yazılır.
             //if ile olan kötü kod. 
@@ -46,12 +60,7 @@ namespace Business.Concrete
 
 
 
-            ValidationTool.Validate(new ProductValidator(),product);
 
-            //Bütün projelerimde kullanmak için bir yapı yapmak istiyorum.
-            _productDal.Add(product);
-
-            return new SuccessResult(Messages.ProductAdded);
         }
 
         public IDataResult<List<Product>> GetAll()
