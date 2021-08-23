@@ -16,6 +16,9 @@ namespace Core.Utilities.Interceptors
     //Try ve catch nedir? Hata yakalamak için kullanılır. Mantık = önce bir dene sonra hatayı yakala. İster çalışsın ister hata versin finally çalışıyor.
     public abstract class MethodInterception : MethodInterceptionBaseAttribute
     {
+        //virtual = bizim ezmemizi bekleyen methodlar.
+        //invocation = business method = add, delete, update, getall falan hepsi .
+        //****Biz burda sadece OnBefore'un içini Core.Aspects.Autofac.Validation.ValidationAspect bu klasörde doldurduğumuz için sadece OnBefore çalışır. Diğerleri boş çünkü. Method'un başında çalışıyor.
         protected virtual void OnBefore(IInvocation invocation) { }
         protected virtual void OnAfter(IInvocation invocation) { }
         protected virtual void OnException(IInvocation invocation, System.Exception e) { }

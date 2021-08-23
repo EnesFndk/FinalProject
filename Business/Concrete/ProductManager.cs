@@ -1,4 +1,5 @@
 ﻿using Business.Absract;
+using Business.CCS;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
@@ -17,10 +18,15 @@ namespace Business.Concrete
     public class ProductManager : IProductsService
     {
         IProductDal _productDal;
+        ILogger _logger;
 
-        public ProductManager(IProductDal productDal)
+        //burda ben productmanager olarak Ilogger'a ihtiyaç duyuyorum diyor.
+        //AurofacBusinessModule'e sistem arkasında newlettik(Reflection ile).Newledikten sonra (ILogger logger)'a veriyor ve sistem performanslıda çalışmış oluyor.
+        public ProductManager(IProductDal productDal, ILogger logger)
         {
             _productDal = productDal;
+            _logger = logger;
+            
         }
         //AOP nedir? projede hata olduğunda onları düzeltmek için kullanılır.
         //Attribute koyduğumuz zaman mesela Add'i çağırıcağımız zaman üstüne bakıp Attribute var mı bakıyor, Varsa onu çalıştırıyor. Örnek Attribute [Validate]. Add çalışmadan önce Attribute çalışıyor.
@@ -28,15 +34,41 @@ namespace Business.Concrete
         //
         //[ValidateAspect(typeof (ProductValidator))] = ProductValidator daki kurallara göre Add metodunu doğrula demek. Bunun kodu da Core.Aspects.Autofac.Validation içerisinde yazıyor.
 
+        //Attribute'lara tipleri typeof ile atıyoruz.
         [ValidationAspect(typeof (ProductValidator))]
         public IResult Add(Product product)
         {
-            //Bu şekilde yazdığımızda business katmanında sadece business code'lar yer alıcak aşağıdaki kodu yazmamıza gerek kalmıcak çünkü arkada onu çalıştıran Core katmanında var zaten.
-            //ValidationTool.Validate(new ProductValidator(), product);
-            
             _productDal.Add(product);
 
-            return new SuccessResult(Messages.ProductAdded);
+             return new SuccessResult(Messages.ProductAdded);
+
+
+
+            //virtual = bizim ezmemizi bekleyen methodlar.
+            //interceptor = araya girmek demek = yani method'un başında ortasında sonunda çalışmak.
+            //Burda kodlar çorba olacağına AOP ile düzenli şekilde log işlemide yapabiliriz. Bu kod kötü kod. Aşadağıdaki kötü kodu görmek için yorum satırına alıyorum.
+            //_logger.Log();
+            //try
+            //{
+            //    _productDal.Add(product);
+
+            //    return new SuccessResult(Messages.ProductAdded);
+            //}
+            //catch (Exception exception)
+            //{
+            //    _logger.Log();
+            //}
+            //return new ErrorResult();
+
+
+            //****Loglama = yapılan operasyonların bir yerde kaydını tutmaya yarıyor. Örnek = kim, ne zaman, nerede, ne ürün ekledi? gibi.
+            //Loglamayı başta sonda yada ortada çalıştırabiliriz.Add içerisinde, add altında.
+            //Bu şekilde yazdığımızda business katmanında sadece business code'lar yer alıcak aşağıdaki kodu yazmamıza gerek kalmıcak çünkü arkada onu çalıştıran Core katmanında var zaten.
+            //business code = yönetim tarafından koyulan kurallardır aslında.Örnek = bir kategoride max 10 ürün olsun diyebilir.
+            //*** Business code 'ları genelde API ve arayüze yazıyorlar bu kesinlikle hatalı. Business code kesinlikle Business'e yazılmalıdır.
+            //Validation ise girilen ürünün bilgilerinin doğru olup olmadığını denetliyor. Kurallara uyup uymadığını denetliyor.
+            //Arayüze neden yazılmaz = çünkü yeni bir arayüz yapıldığında taşımanız gerekir.
+            //ValidationTool.Validate(new ProductValidator(), product);
 
             //IResult eklediğimizde Add kızdı çünkü içinde birşey döndürmemiz gerekiyordu. Bu yüzden Result'u döndürdük. Return'ü _productDal'a eklemedik çünkü Add var .
             //business kodlar buraya yazılır.
@@ -57,10 +89,6 @@ namespace Business.Concrete
             //    return new ErrorResult(Messages.ProductNameInvalid);
             //}
             //**********_productDal.Add(product); üstte olması lazım kod sıralaması önemli çünkü yoksa çalışmaz. if yerine normal ErrorResult da yapsaydık olmazdı. Kod sıralaması önemli 
-
-
-
-
         }
 
         public IDataResult<List<Product>> GetAll()

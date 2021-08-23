@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extras.DynamicProxy;
 using Business.Absract;
+using Business.CCS;
 using Business.Concrete;
 using Castle.DynamicProxy;
 using Core.Utilities.Interceptors;
@@ -25,6 +26,7 @@ namespace Business.DependencyResolvers.Autofac
             //IProductsService istenilirse ProductManager new'le. Startup'da yazdığımız kodun aynısı.
             builder.RegisterType<ProductManager>().As<IProductsService>().SingleInstance();
             builder.RegisterType<EfProductDal>().As<IProductDal>().SingleInstance();
+
 
             //Çalışan uygulamalar içerisinde 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();

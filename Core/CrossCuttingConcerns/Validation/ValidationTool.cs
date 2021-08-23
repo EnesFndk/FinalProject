@@ -8,6 +8,10 @@ namespace Core.CrossCuttingConcerns.Validation
     public class ValidationTool
     {
         //hepsinin base'i object olduğu için object ekliyoruz.
+        //IValidator = aslında productvalidator çünkü onun içinde IValidator var.
+        //***IValidator validator = doğrulama kurallarının olduğu class.
+        //***object entity = doğrulanacak class.
+
         public static void Validate(IValidator validator,object entity)
         {
             //--------- AŞAĞIDAKİ KODUN TÜRKÇESİ ----------- VALIDATION
