@@ -4,6 +4,7 @@ using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
+using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -19,14 +20,23 @@ namespace Business.Concrete
     public class ProductManager : IProductsService
     {
         IProductDal _productDal;
-        ILogger _logger;
+        //ILogger _logger;
+        ICategoryService _categoryService;
 
         //burda ben productmanager olarak Ilogger'a ihtiyaç duyuyorum diyor.
         //AurofacBusinessModule'e sistem arkasında newlettik(Reflection ile).Newledikten sonra (ILogger logger)'a veriyor ve sistem performanslıda çalışmış oluyor.
-        public ProductManager(IProductDal productDal, ILogger logger)
+
+
+        //Service'ler 1 kere yaz ordan kullanılsın diye.
+        //**************Bir entity Manager kendisi hariç başka bir Dal'ı enjecte edemez. Yani biz buraya IProductDal yazdık ama ICategoryDal yazamayız.**********************
+        //Hem Başka bir Dal enjecte edemediğimiz için hemde patron verilen kuralı güncellemek isterse farklı bişey söylerse diye ICategoryService'den enjecte ediyoruz.
+        //burda çağırmamız gereken kural ICategoryService'den gelmeli Patronun "Eğer mevcut kategori sayısı 15'i geçtiyse sisteme yeni ürün eklenemez." dediğine göre.
+        //artık CategoryService'den operasyon çağırıcaksak buraya çağırıcaz. Çünkü onu entegre ettik.
+        public ProductManager(IProductDal productDal, ICategoryService categoryService)
         {
             _productDal = productDal;
-            _logger = logger;
+            //_logger = logger;
+            _categoryService = categoryService;
             
         }
         [ValidationAspect(typeof(ProductValidator))]
@@ -51,23 +61,39 @@ namespace Business.Concrete
         [ValidationAspect(typeof (ProductValidator))]
         public IResult Add(Product product)
         {
+            //bu kodu bilmeyen bile isimlerinden anlar iş kuralları olduğunu.
+            //buraya istediğimiz kadar iş kuralı yazabiliriz.
+            IResult result = BusinessRules.Run(CheckIfProductNameExists(product.ProductName),
+                CheckIfProductCountOfCategoryCorrect(product.CategoryId),
+                CheckIfCategoryLimitExceded());
 
+            //if içerisindeki result = kurala uymayan bir durum oluşmussa, result'u döndürebilirim. result= kurala uymayan.
+            if (result!=null)
+            {
+                return result;
+            }
+            _productDal.Add(product);
+
+            return new SuccessResult(Messages.ProductAdded);
+
+            //Eğer mevcut kategori sayısı 15'i geçtiyse sisteme yeni ürün eklenemez.
+
+
+
+
+            //************* BusinessRules ile yazdığımız için aşadaki kötü kodlara ihtiyacımız yok. Ama ben görmek için yorum satırına alıyorum.*********************
             //bize patron görev vermişti onları yaptık.
             //aşağıdaki 2 kuraldanda geçiyor ise success.
-            if (CheckIfProductCountOfCategoryCorrect(product.CategoryId).Success)
-            {
-                if (CheckIfProductNameExists(product.ProductName).Success)
-                {
-                    _productDal.Add(product);
+            //if (CheckIfProductCountOfCategoryCorrect(product.CategoryId).Success)
+            //{
+            //    if (CheckIfProductNameExists(product.ProductName).Success)
+            //    {
+            //        _productDal.Add(product);
 
-                    return new SuccessResult(Messages.ProductAdded);
-                }
-            }
-            return new ErrorResult();
-
-
-
-
+            //        return new SuccessResult(Messages.ProductAdded);
+            //    }
+            //}
+            //return new ErrorResult();
 
 
 
@@ -213,6 +239,20 @@ namespace Business.Concrete
                 return new ErrorResult(Messages.ProductNameAlreadyExists);
             }
             //successResult içerisinde neden message yok çünkü kullanıcıya başardın diye bir mesaj göndermek saçma olur.
+            return new SuccessResult();
+        }
+        private IResult CheckIfCategoryLimitExceded()
+        {
+            //Bunu category'de neden yazmadık çünkü bunu category'de yazarsak bu tek başına service olur. Bizden Category için isterlerse tamam ama şuan farklı bir durum var.
+            //product için categoryservice nasıl yorumlanıyor o yüzden bu şekilde yazıyoruz.
+            
+
+            //burda bizim için tümünü getiriyor. GetAll bize IDataResult verdi.
+            var result = _categoryService.GetAll();
+            if (result.Data.Count>15)
+            {
+                return new ErrorResult(Messages.CategoryLimitExceded);
+            }
             return new SuccessResult();
         }
 
