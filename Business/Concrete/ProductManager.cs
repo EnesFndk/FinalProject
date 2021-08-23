@@ -11,6 +11,7 @@ using Entities.DTOs;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Business.Concrete
@@ -28,6 +29,18 @@ namespace Business.Concrete
             _logger = logger;
             
         }
+        [ValidationAspect(typeof(ProductValidator))]
+        public IResult Update(Product product)
+        {
+            if (CheckIfProductCountOfCategoryCorrect(product.CategoryId).Success)
+            {
+                _productDal.Update(product);
+
+                return new SuccessResult(Messages.ProductCountOfCategoryError);
+            }
+            return new ErrorResult();
+        }
+
         //AOP nedir? projede hata olduğunda onları düzeltmek için kullanılır.
         //Attribute koyduğumuz zaman mesela Add'i çağırıcağımız zaman üstüne bakıp Attribute var mı bakıyor, Varsa onu çalıştırıyor. Örnek Attribute [Validate]. Add çalışmadan önce Attribute çalışıyor.
         //Attribute lar classlara methodlara vs vs yapılara anlam yüklemek için kullanılıyor.
@@ -38,9 +51,49 @@ namespace Business.Concrete
         [ValidationAspect(typeof (ProductValidator))]
         public IResult Add(Product product)
         {
-            _productDal.Add(product);
 
-             return new SuccessResult(Messages.ProductAdded);
+            //bize patron görev vermişti onları yaptık.
+            //aşağıdaki 2 kuraldanda geçiyor ise success.
+            if (CheckIfProductCountOfCategoryCorrect(product.CategoryId).Success)
+            {
+                if (CheckIfProductNameExists(product.ProductName).Success)
+                {
+                    _productDal.Add(product);
+
+                    return new SuccessResult(Messages.ProductAdded);
+                }
+            }
+            return new ErrorResult();
+
+
+
+
+
+
+
+            //****bir kategoride en fazla 10 ürün olabilir = iş kuralı patron söyledi yap.
+            //****bunu if ile böyle yazdık. bu kötü kod. Bunu update'e de yazmamız gerekiyor.
+            //****patron sonra bir kategoride en fazla 15 ürün olabilir dedi ve add de 15 yaptık tamam ama programcı update'de eklemeyi unutursa patlar. kodlar çorba olur.
+            //**** kötü kod gözüksün diye burda yorum satırına alıyorum.
+            //var result = _productDal.GetAll(p => p.CategoryId == product.CategoryId).Count;
+            //if (result>=10)
+            //{
+            //    return new ErrorResult(Messages.ProductCountOfCategoryError);
+            //}
+
+
+
+            //patronun istediği "bir kategoride en fazla 10 ürün olabilir" iş kuralını en altta private olarak yazdık ordan çekiyoruz clean code tekniği ile yazıyoruz.
+            //CheckIfProductCountOfCategoryCorrect bunu biz kafamızdan belirledik. Herkes tarafından anlaşılsın diye ing. yazdık. 
+            //aşağıdaki kod iyi kod yorum satırı yaptım.
+            //if (CheckIfProductCountOfCategoryCorrect(product.CategoryId).Success)
+            //{
+            //    _productDal.Add(product);
+
+            //    return new SuccessResult(Messages.ProductAdded);
+            //}
+            //return new ErrorResult();
+
 
 
 
@@ -91,6 +144,8 @@ namespace Business.Concrete
             //**********_productDal.Add(product); üstte olması lazım kod sıralaması önemli çünkü yoksa çalışmaz. if yerine normal ErrorResult da yapsaydık olmazdı. Kod sıralaması önemli 
         }
 
+       
+
         public IDataResult<List<Product>> GetAll()
         {
             //saat 22 de bakım olduğundan mesaj geliyor gibi bir senaryo yapıyoruz.
@@ -123,6 +178,46 @@ namespace Business.Concrete
         {
             return new SuccessDataResult<List<ProductDetailDto>>(_productDal.GetProductDetails());
         }
+
+
+
+        //******şimdi patron bize bir kategoride en fazla 10 ürün olsun dedi onu yazıyoruz.
+        //******neden private yazdık bunu sadece business de kullacağımız için.
+        //******bu bir iş kuralı parçacığı olduğu için CheckIfProductCountOfCategoryCorrect(Product product) 'de yazabiliriz ama farklı bir method geldiğinde düzenleme ihtiyacı duyacağın için alttaki şekilde yazmak daha iyi.
+        //******Aşağıdaki kod aslında database'deki "Select count(*) from products where categoryId=1" kodu çalıştırır.
+        private IResult CheckIfProductCountOfCategoryCorrect(int categoryId)
+        {
+            var result = _productDal.GetAll(p => p.CategoryId == categoryId).Count;
+            if (result >= 10)
+            {
+                return new ErrorResult(Messages.ProductCountOfCategoryError);
+            }
+            //successResult içerisinde neden message yok çünkü kullanıcıya başardın diye bir mesaj göndermek saçma olur.
+            return new SuccessResult();
+        }
+
+
+        //**patron bizden aynı isimli ürün eklenemez dedi. nasıl yapıcaz??
+        //***CheckIfProductNameExists =Bu ürün eklenmiş mi eklenmemiş mi
+        //**parametre olarak productName göndermemiz lazım çünkü patron aynı isimli ürün eklenemez dedi.
+        //
+        private IResult CheckIfProductNameExists(string productName)
+        {
+            //ürünlere git bak ürün isminde productName var mı ? aşağıdaki kod. Any= var mı demek. Any'i linq'e çöztürmek lazım.
+            //Any = bu koda uyan kayıt var mı = "_productDal.GetAll(p => p.ProductName == productName)"
+            //******Aşağıdaki kod aslında database'deki "Select count(*) from products where categoryId=1" kodu çalıştırır.
+            var result = _productDal.GetAll(p => p.ProductName == productName).Any();
+            //eğer böyle bir data varsa (result) yoksa demek isteseydik (!result)
+            if (result )
+            {
+                return new ErrorResult(Messages.ProductNameAlreadyExists);
+            }
+            //successResult içerisinde neden message yok çünkü kullanıcıya başardın diye bir mesaj göndermek saçma olur.
+            return new SuccessResult();
+        }
+
+
+
 
         //BURADA SİSTEM BAKIMDA YAZDIRDIK TABİ ÜSTTEKİ GETPRODUCTDETAILS OLDUĞU İÇİN 2. KEZ YAZDIRAMIYORUM O YÜZDEN BURAYI YORUM SATIRI YAPTIM.
         //public IDataResult<List<ProductDetailDto>> GetProductDetails()
