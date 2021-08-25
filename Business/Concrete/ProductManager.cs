@@ -1,4 +1,5 @@
 ﻿using Business.Absract;
+using Business.BusinessAspects.Autofac;
 using Business.CCS;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
@@ -80,7 +81,7 @@ namespace Business.Concrete
 
         //SecuredOperation = güvenlik operasyonu Add metodunun güvenliğini sağlıyacak. Erişimi olan kişilerde admin ve product.add olsun istiyoruz.
         //product.add ve admin bir claim'dir. Kullanıcının product.add ve admin claim'lerinden birine sahip olması gerekiyor demek.
-        //[SecuredOperation("product.add, admin)")]
+        [SecuredOperation("product.add, admin)")]
         [ValidationAspect(typeof (ProductValidator))]
         public IResult Add(Product product)
         {
