@@ -61,12 +61,10 @@ namespace Business.Concrete
 
 
 
-
         //*****JWT ÇALIŞMA SİSTEMİ ********
         //*****Client(firefox, chrome, mobil uygulamalar vs.) Api tarafına bir istekte bulunuyor. Token'ı yoksa api uygulaması cevap olarak http yanıtı (olumsuz) dönüyor. 
         //*****Client benim kullanıcı adım ve şifrem var yada email parola istekte bulunuyor. Api app'de olumlu jwt dönüyor. Client bunu hafızasında tutuyor. Veri kaynağında, cookie 'de gibi
         //*****Client bundan sonraki isteklerinde (mesela ürün ekleme olsun) bide jwt ekliyor , yani diyor ben yetkimle anahtarımla geldim diyor. Api app ise database'ine bakıyor. Api olumlu yada olumsuz cevap dönüyor.
-
 
         //Encryption ve Hashing = bir datayı karşı taraf okuyamasın diye yapılan çalışmalar. Örn= kullanıcı parolalarını açık da tutabiliriz ama mantıken biz bunu gizlemeliyiz bunlar ile.
         //Hashing'in geri dönüşü yoktur.
@@ -74,10 +72,8 @@ namespace Business.Concrete
         //Hash'lemek = 1234-1234 olan parolayı BDA4-QWESDAQ-QEWDA olarak tutuyor. Belli olmuyor parola.
         //Saltin işlemi = kullanıcının girdiği parolayı bizde bişeyler katarak güçlendiriyoruz.
         //Encryption geri dönüşü vardır.  Encryption = şifrelemek Dencryption = o şifreyi çözmek. Hashing'de bu yok çünkü geri dönüşü yok.
-        
+
         //1-Database'e Users, OperationClaims, UserOperationClaims ekliyoruz.
-
-
 
 
 
