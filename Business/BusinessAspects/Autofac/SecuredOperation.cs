@@ -7,6 +7,7 @@ using System.Text;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 using Core.Extensions;
+using Business.Constants;
 
 namespace Business.BusinessAspects.Autofac
 {
@@ -32,18 +33,22 @@ namespace Business.BusinessAspects.Autofac
             _httpContextAccessor = ServiceTool.ServiceProvider.GetService<IHttpContextAccessor>();
 
         }
-
+        //Method'un önünde çalıştır demek . Method'da add metodu olabilir.
         protected override void OnBefore(IInvocation invocation)
         {
+            //O anki kullanıcının Claimroles (Kurallarını) bul diyor.
             var roleClaims = _httpContextAccessor.HttpContext.User.ClaimRoles();
+            //kullanıcının rollerini gez
             foreach (var role in _roles)
             {
+                //claim'lerin içlerinde ilgili role var ise methodu çalıştırmaya devam et = return
                 if (roleClaims.Contains(role))
                 {
                     return;
                 }
             }
-            throw new Exception();
+            //Eğer yok ise yetkin yok hatası ver.
+            throw new Exception(Messages.AuthorizationDenied);
         }
     }
 }
