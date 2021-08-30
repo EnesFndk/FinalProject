@@ -198,8 +198,8 @@ namespace Business.Concrete
             //**********_productDal.Add(product); üstte olması lazım kod sıralaması önemli çünkü yoksa çalışmaz. if yerine normal ErrorResult da yapsaydık olmazdı. Kod sıralaması önemli 
         }
 
-       
-
+        
+        [CacheAspect]
         public IDataResult<List<Product>> GetAll()
         {
             //saat 22 de bakım olduğundan mesaj geliyor gibi bir senaryo yapıyoruz.
@@ -277,7 +277,7 @@ namespace Business.Concrete
 
             //burda bizim için tümünü getiriyor. GetAll bize IDataResult verdi.
             var result = _categoryService.GetAll();
-            if (result.Data.Count<15)
+            if (result.Data.Count>15)
             {
                 return new ErrorResult(Messages.CategoryLimitExceded);
             }
