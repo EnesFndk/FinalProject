@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Core.DependencyResolvers
@@ -14,14 +15,15 @@ namespace Core.DependencyResolvers
     {
         //ICoreModule entegre ettik ve implemente ettikten sonra webApi'deki Startup'ta yazdığımız singleton'u buraya yazıyoruz. Her projede kullanılacak standarta getirmek için.
         //Service bağımlılıklarını çözümlüyeceğimiz yer. Zaten DependencyResolvers = bağımlılıkları çözdürmek .
-        public void Load(IServiceCollection serviceCollection)
+        public void Load(IServiceCollection services)
         {
-            serviceCollection.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             //MemoryacheManager'daki "IMemoryCache _memoryCache;" karşılığı var anlamına geliyor alttaki kod'da.
             //Hazır bir injection aslında bu C# ile gelen. Hazır bir ICacheManager instance'si oluşturuyor.
-            serviceCollection.AddMemoryCache();
+            services.AddMemoryCache();
             //yarın öbürgün redis'e geçmek istersen MemoryCacheManager yerine RedisCacheManager yazman yeterli ve serviceCollection.AddMemoryCache(); silmen yeterli olacaktır. Şuan Microsoft'un base alternatifini kullanıyoruz.
-            serviceCollection.AddSingleton<ICacheManager, MemoryCacheManager>();
+            services.AddSingleton<ICacheManager, MemoryCacheManager>();
+            services.AddSingleton<Stopwatch>();
         }
     }
 }
