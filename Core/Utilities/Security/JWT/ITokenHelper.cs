@@ -11,6 +11,6 @@ namespace Core.Utilities.Security.JWT
         //**Kim için oluşturuyoruz = User user
         //**Bu token'in içerisine hangi yetkileri koyalım = List<OperationClaim> opertionClaims
         //***Biz sistemimiz api sistemi ve Kullanıcı client'den giriş yapıyor ve api'ye gönderiyor. Burda CreateToken çalışıcak. Eğer doğru ise ilgili kullanıcı (User) OperationClaim'lerini bulucak Orda JWT üretecek ve client'e verecek.
-        AccessToken CreateToken(User user, List<OperationClaim> opertionClaims);
+        AccessToken CreateToken(User user, List<OperationClaim> operationClaims);
     }
 }

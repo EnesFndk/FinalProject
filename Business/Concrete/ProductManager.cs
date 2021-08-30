@@ -81,6 +81,10 @@ namespace Business.Concrete
 
         //SecuredOperation = güvenlik operasyonu Add metodunun güvenliğini sağlıyacak. Erişimi olan kişilerde admin ve product.add olsun istiyoruz.
         //product.add ve admin bir claim'dir. Kullanıcının product.add ve admin claim'lerinden birine sahip olması gerekiyor demek.
+        //************Yetkilendirme işlemi için Postman'de ilk auth/register yapıyoruz sonra aynı Email ve password ile auth/login yaptıktan sonra api/products/add için headers'a Authorization yazıp karşısına Bearer ve loginden aldığımız token'ı yapıştırıyoruz.
+        //************Yetki vermek için Database'de operationClaims'e admin, product.add, moderator gibi yetkiler yazıyoruz.
+
+        //securedoperation içindekiler key görevi görecekler ve key'ler genelde küçük yazılır.
         [SecuredOperation("product.add, admin)")]
         [ValidationAspect(typeof (ProductValidator))]
         public IResult Add(Product product)
@@ -238,7 +242,7 @@ namespace Business.Concrete
         private IResult CheckIfProductCountOfCategoryCorrect(int categoryId)
         {
             var result = _productDal.GetAll(p => p.CategoryId == categoryId).Count;
-            if (result >= 10)
+            if (result >= 15)
             {
                 return new ErrorResult(Messages.ProductCountOfCategoryError);
             }
@@ -273,7 +277,7 @@ namespace Business.Concrete
 
             //burda bizim için tümünü getiriyor. GetAll bize IDataResult verdi.
             var result = _categoryService.GetAll();
-            if (result.Data.Count>15)
+            if (result.Data.Count<15)
             {
                 return new ErrorResult(Messages.CategoryLimitExceded);
             }

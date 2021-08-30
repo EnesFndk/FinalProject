@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace WebAPI.Controllers
 {
+    //[Route("api/[controller]")] = postman'e locahost/api yazıyoruz ya api/auth/add api' auth yazmamıza yarıyor bu .
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : Controller
@@ -18,7 +19,7 @@ namespace WebAPI.Controllers
         {
             _authService = authService;
         }
-
+        //kullanıcı bize bilgi göndereceği için httpPost olucak.
         [HttpPost("login")]
         public ActionResult Login(UserForLoginDto userForLoginDto)
         {

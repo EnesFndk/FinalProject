@@ -17,16 +17,19 @@ namespace Core.Utilities.Security.Hashing
         //passwordHash = hmac.ComputeHash((password);  yazdığımız zaman bizden byte cinsinden istediği için alttaki gibi yazıyoruz.
         //passwordSalt = hmac.Key; = burdaki Key oluşturduğumuz algoritmada'ki "System.Security.Cryptography.HMACSHA512())" Key değeridir. O an oluşturduğu. O sebeple her kullanıcı için farklı key oluşturuyor. 
         //Verdiğimiz password'un Hash'ini oluşturuyor.
+        //out = Parametreyi gönderdiğimizde değişen nesne aynı zamanda bizim byte [ ] aktarılacak gibi düşünebiliriz.
         public static void CreatePasswordHash(string password,out byte[] passwordHash,out byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
+                //Kendisi bir salt vasıtasıyla ComputeHash oluşturdu , oluşturduğu salt'ı da biz alıp Key olarak parametre olan passwordSalt'a atadık.
+                //passwordHash'e de oluşan hash'i vermiş olduk.
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
         }
 
-        //Burda out vermiyoruz. Çünkü değerleri biz vericez.
+        //Burda out vermiyoruz. Çünkü değerleri biz vericez. Verify olacağı için out'a gerek yok.
         //Veritabanındaki Has ve Salt ile Kullanıcının gönderdiği password'ün karşılaştırıcaz. Eğer birbirine eşitse true değil ise false dönücek.Bu bizim veritabanımızdaki Hash'imiz olucak.
         //HMACSHA512 = bize kullandığımız key anahtarını soruyor o sebeple HMACSHA512(passwordSalt)) yazıyoruz.
         //Bu aşağıdaki "string password" sisteme kayıt oldu. Farklı zamanda tekrar girmeye çalışırken girdiği parola.
@@ -34,6 +37,7 @@ namespace Core.Utilities.Security.Hashing
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))
             {
+                //daha önce oluşturulan şifreyle verify edilecek şifre birbiriyle örtüşecek demek aşağıdaki kod.
                 var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
                 //hesaplanan Hash'in bütün değerlerini tek tek dolaş demek for içinde yazan.
                 for (int i = 0; i < computedHash.Length; i++)

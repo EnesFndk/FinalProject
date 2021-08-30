@@ -14,6 +14,8 @@ namespace Core.Extensions
         //Claim extension methodu oluşturuyoruz.böyle oluşturuluyor.
         //"string email" = bu da parametre
         //bu hepsi için geçerli. Claim .Net core 'un base'inde var zaten. 
+        //**** HANİ JWTHELPER'DA "IEnumerable<Claim> SetClaims" ALTINDA claims var ya onu yazdıktan sonra addEmail gelmesi için böyle extensions'lar yazıyoruz
+        //**** Bunlar hepsi için geçerli claims.AddEmail gelmesi için yada claims.AddName gelmesi için bu extensions'ları yazıyoruz.
         public static void AddEmail(this ICollection<Claim> claims, string email)
         {
             claims.Add(new Claim(JwtRegisteredClaimNames.Email, email));

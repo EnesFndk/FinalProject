@@ -1,5 +1,7 @@
 using Business.Absract;
 using Business.Concrete;
+using Core.DependencyResolvers;
+using Core.Extensions;
 using Core.Utilities.IoC;
 using Core.Utilities.Security.Encryprtion;
 using Core.Utilities.Security.JWT;
@@ -8,6 +10,7 @@ using DataAccess.Concrete.EntityFramework;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -43,6 +46,11 @@ namespace WebAPIx
             //aþaðýdakinde de IProductDal isterse ona newlenmiþ EfProductDal veriyor. IoC yöntemi ile.
             //services.AddSingleton<IProductDal, EfProductDal>();
 
+            //HttpContextAccessor = her yapýlan istekle ilgili oluþan context. Bizim client bir istekte bulunduðu zaman baþtan sona kadar HttpContextAccessor takip ediyor.
+            //Burda instance oluþturuyoruz fakat devreye girmesi için ServicesTool yazdýk aþaðýya.
+            //********Burdaki kodu Diðer projelerde de kullanabileceðimiz standarta getirmek için Core/DependencyResolvers/CoreModule tarafýna yazýyoruz. Servisler artýk orada toplanýcak. O sebeple yorum satýrý yaptým.
+            //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             var tokenOptions = Configuration.GetSection("TokenOptions").Get<TokenOptions>();
             //Microsoft.AspNetCore.Authentication.JwtBearer 3.1.12 sürümünü yüklüyoruz çünkü çalýþmýyor diðerleri
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -50,16 +58,34 @@ namespace WebAPIx
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
+                        //Issuer bilgisini Validate Edeyim mi ? bizde true deyip et diyoruz.
+                        //Biz token veriyoruz ýssuer olarak Enes@enes.com olarak veriyoruz o bilgi bize geri geliyor.
+                        //Bu hepsinde geçerli.
                         ValidateIssuer = true,
+                        //Audience'yide kontrol et.
                         ValidateAudience = true,
+                        //Token'ýn yaþam döngüsünü kontrol edeyim mi ? Token olsa yeter bana diyoruz.
                         ValidateLifetime = true,
+                        //biz bunu tokenoptions'daki issuer'dan alýyoruz. Ayný þekilde Audience içinde geçerli.
                         ValidIssuer = tokenOptions.Issuer,
                         ValidAudience = tokenOptions.Audience,
+                        //anahtarýda kontrol edeyim mi ? true diyoruz.
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey)
                     };
                 });
-            
+            //yukarýda yazdýðýmýz kodlardan autofac haberdar deðil o sebeple ServiceTool yazýyoruz.
+            //aþaðýdaki geçici çözüm olduðundan yorum satýrý yapýyorum. onun altýndaki asýl nokta.
+            //ServiceTool.Create(services);
+
+
+            //****Buraya sadece CoreModule yazarsak. HttpContextAccessor'ü injection ettik ya Core altýnda CoreModule'den Yarýn öbür gün farklý birþeyi injection edersek diye birden fazla Module yazmak için AddDependencyResolvers yazýyorum.
+            //****AddDependencyResolvers içine gelmediði için Extension oluþturmak adýna ServiceCollectionExtensions ekledik
+            //****ICoreModule'ü array halinde (params yada koleksiyon olarak da yapabiliriz) new'ledik ve artýk "{}" içine istediðimiz kadar Module yazabiliriz.
+            //****Bu hareket yarýn öbürgün CoreModule gibi farklý modullerde oluþturursak injectionlar için onlarýda istediðimiz kadar oluþturup burda new CoreModule(), "," ekleyip devam ettirebiliriz.
+            services.AddDependencyResolvers(new ICoreModule[] {
+                new CoreModule()
+            });
 
         }
 
@@ -75,9 +101,11 @@ namespace WebAPIx
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            //sýrasý ile ilk Authentication sonra Authorization yapmak lazým çünkü sýrayla çalýþtýðý için.
             //bide UseAuthentication ekliyoruz.
+            //Authentication = eve girmek diyebiliriz.
             app.UseAuthentication();
-
+            //Authorization = evin içerisine bir þey yapmaktýr.
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

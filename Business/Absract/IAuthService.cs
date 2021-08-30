@@ -12,6 +12,7 @@ namespace Business.Absract
     {
         IDataResult<User> Register(UserForRegisterDto userForRegisterDto, string password);
         IDataResult<User> Login(UserForLoginDto userForLoginDto);
+        //kullanıcı mevcut mu kontrolünü yapmak için email kullanıyoruz.
         IResult UserExists(string email);
         IDataResult<AccessToken> CreateAccessToken(User user);
     }
