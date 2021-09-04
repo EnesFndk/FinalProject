@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebAPI.Controllers
@@ -33,6 +34,9 @@ namespace WebAPI.Controllers
             //yukarıdaki kötü kod yerine startup'da IoC ile Newlenebilir yapılar yaptık ve clean cod olarak yazdık.
             //Postman'deki Status önemli oraya bakarak veri gelişini görebiliyoruz. Baktık 400 bad request yaptı = sistem bakımda mesajı verdi. status 200 OK ise çalışıyor.
 
+            //burda dataloaded ekledik onu görmemiz için 5 sn bekleticez.
+            Thread.Sleep(1000);
+
             var result = _productsService.GetAll();
             if (result.Success)
             {
@@ -48,6 +52,19 @@ namespace WebAPI.Controllers
         public IActionResult GetById(int id)
         {
             var result = _productsService.GetById(id);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+        //routerLink için backend'de de düzenleme yapmamız gerekiyor.
+        //neden category'e yazmıyoruz da product'a yazıyoruz çünkü {path:"products/category/:categoryId" , component:ProductComponent}, burda parametre product.
+        [HttpGet("getbycategory")]
+        public IActionResult GetByCategory(int categoryId)
+        {
+            //GetAllByCategoryId = bunu oluşmadıysak zaten kızacağı için ampulden create method deyip IProductsManager'a gidip onu IDataResult şeklinde düzelttikten sonra ProductManager'da implemente ediyoruz.
+            var result = _productsService.GetAllByCategoryId(categoryId);
             if (result.Success)
             {
                 return Ok(result);

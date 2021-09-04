@@ -38,6 +38,8 @@ namespace WebAPIx
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            //Frontend'de Cors hatasý aldýðýmýz için böyle bir kod ekliyoruz.
+            services.AddCors(); 
             //Autofac, Ninject, CastleWindsor, StructureMap, LightInject, DryInject --> IoC Container alt yapýsý kuruyor ve bunlardan birini kullanýcaz. "services.AddSingleton<IProductDal, EfProductDal>();" bunun gibileri yazmamak için. gene clean cod yapýyoruz.
             //yukarýdaki iþlemler AOP tekniðiyle yapýcaz.
             //Eðer IProductsService isterse ona newlenmiþ ProductManager ver demek. IoC yöntemi ile.
@@ -97,6 +99,9 @@ namespace WebAPIx
             {
                 app.UseDeveloperExceptionPage();
             }
+            //Frontend'de Cors hatasý aldýðýmýz için böyle bir kod ekledikten sonra buraya da ekliyoruz özellikle UseHttpsRedirection üstüne eklicez.
+            //http://localhost:4200 istek gelirse izin ver demek AllowAnyHeader ise ne gelirse gelsin izin ver.
+            app.UseCors(builder=>builder.WithOrigins("http://localhost:4200").AllowAnyHeader());
 
             app.UseHttpsRedirection();
 
