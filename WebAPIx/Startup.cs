@@ -99,6 +99,9 @@ namespace WebAPIx
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.ConfigureCustomExceptionMiddleware();
+
             //Frontend'de Cors hatasý aldýðýmýz için böyle bir kod ekledikten sonra buraya da ekliyoruz özellikle UseHttpsRedirection üstüne eklicez.
             //http://localhost:4200 istek gelirse izin ver demek AllowAnyHeader ise ne gelirse gelsin izin ver.
             app.UseCors(builder=>builder.WithOrigins("http://localhost:4200").AllowAnyHeader());

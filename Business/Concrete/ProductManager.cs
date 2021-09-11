@@ -88,7 +88,7 @@ namespace Business.Concrete
         //************Yetki vermek için Database'de operationClaims'e admin, product.add, moderator gibi yetkiler yazıyoruz.
 
         //securedoperation içindekiler key görevi görecekler ve key'ler genelde küçük yazılır.
-        [SecuredOperation("product.add, admin)")]
+        //[SecuredOperation("product.add, admin)")]
         [ValidationAspect(typeof (ProductValidator))]
         [CacheRemoveAspect("IProductsService.Get")]
         public IResult Add(Product product)
@@ -207,7 +207,7 @@ namespace Business.Concrete
         public IDataResult<List<Product>> GetAll()
         {
             //saat 22 de bakım olduğundan mesaj geliyor gibi bir senaryo yapıyoruz.
-            if (DateTime.Now.Hour==22)
+            if (DateTime.Now.Hour==21)
             {
                 return new ErrorDataResult<List<Product>>(Messages.MaintenanceTime);
             }
