@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -45,10 +46,27 @@ namespace Core.Extensions
             
             //Mesaj olarak böyle yazdık.
             string message = "Internal Server Error";
+            //burda şimdi hata listesi oluşturucaz.O IEnumerable dönüyor zaten. IEnumerable döndüğünü nasıl anlıyoruz hata aldığımızda view details dediğimizde Errors'da data type'de.
+            //ValidationFailre'da aynı şekilde oradan geliyor.
+            IEnumerable<ValidationFailure> errors;
             //eğer aldığım hata ValidationException ise o zaman message'yi e.Message ile değiştir . 
             if (e.GetType() == typeof(ValidationException))
             {
                 message = e.Message;
+                //aynı zamanda errors'u doldurmak onuda döndürmek için buraya yazıyoruz.
+                errors = ((ValidationException) e).Errors;
+                //StatusCodu'da 400 olarak set ediyoruz.
+                httpContext.Response.StatusCode = 400;
+
+                //Doğrulama hatası ise ona göre dönüşleri buraya yazdık diğer kodla farklı olarak Errors ekledik.
+                //sistem karışıklığı olmaması için ErrorDetails ile ValidatonErrorDetails'i ayırıyoruz.
+                return httpContext.Response.WriteAsync(new ValidationErrorDetails
+                {
+                    StatusCode = 400,
+                    Message = message,
+                    Errors = errors
+
+                }.ToString());
             }
 
             //olurda bir hata olursa 
